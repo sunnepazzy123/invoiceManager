@@ -3,27 +3,25 @@ import { ToWords } from "to-words";
 
 const calendar = require("calendar-js");
 
-
 interface ICalendar {
-  year: string,
-  yearAbbr: string,
-  month: string,
-  monthAbbr: string,
-  weekdays: string[],
-  weekdaysAbbr: string[],
-  days: number,
-  firstWeekday: number,
-  lastWeekday: number,
+  year: string;
+  yearAbbr: string;
+  month: string;
+  monthAbbr: string;
+  weekdays: string[];
+  weekdaysAbbr: string[];
+  days: number;
+  firstWeekday: number;
+  lastWeekday: number;
   calendar: IMonthDays;
 }
 
-
 export interface ICalendarInvoice extends ICalendar {
-    weeklyWorkingDays: number[][] , 
-    weeklyHoursTotal: IWeeklyHoursTotal, 
-    totalMonthlyHours: number, 
-    dailyWages: number, 
-    monthlyWages: number
+  weeklyWorkingDays: number[][];
+  weeklyHoursTotal: IWeeklyHoursTotal;
+  totalMonthlyHours: number;
+  dailyWages: number;
+  monthlyWages: number;
 }
 
 type IWorkingDays = number[];
@@ -31,97 +29,124 @@ type IWorkingDays = number[];
 type IMonthDays = number[][];
 
 interface IWeeklyHoursTotal {
-    [key: string]: { weeklyHours: number, weeklyWages: number, wagesPerHour: number, weekendDate: string},
+  [key: string]: {
+    weeklyHours: number;
+    weeklyWages: number;
+    wagesPerHour: number;
+    weekendDate: string;
+  };
 }
 
-const monthlyInvoiceDetails = (holidays: IWorkingDays = [1, 11, 3, 30], month?: number) => {
-  const currentDate = new Date('22/Nov/2023');
+const monthlyInvoiceDetails = (
+  holidays: IWorkingDays = [25, 26, 23, 24, 27, 28, 29, 30, 31],
+  dailyHours?: number,
+  wagesInHour?: number,
+  date?: string
+) => {
+
+  let currentDate;
+
+  if(date) {
+    currentDate = new Date(date);
+  } else {
+    currentDate = new Date();
+  }
+
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
 
-  const dailyWorkingHours = 8;
-  const wagesPerHour = 125;
+  const dailyWorkingHours = dailyHours || 8;
+  const wagesPerHour = wagesInHour ||  125;
   const dailyWages = wagesPerHour * dailyWorkingHours;
 
-  let kalendar: ICalendar;
+  const kalendar: ICalendar = calendar().of(currentYear, currentMonth);
+  
 
-  if(month && month <= 11 && month >= 0) {
-    kalendar = calendar().of(currentYear, month);
-  }else{
-    kalendar = calendar().of(currentYear, currentMonth);
+  const monthDays = kalendar.calendar;
+  const weeklyHoursTotal: IWeeklyHoursTotal = {};
+
+  let weeklyWorkingDays: number[][] = [];
+  let totalMonthlyHours = 0;
+
+  for (const key in monthDays) {
+    const filteredPerWeek = monthDays[key].slice(1, -1); // filter sunday && saturday
+
+    const workingDaysPerWeek = filteredPerWeek.filter((day) => {
+   
+      if (holidays && holidays.length >= 0 && day !== 0) {
+        if (!holidays?.includes(day)) {
+          return day;
+        }
+      }
+    });
+
+    // continue if week is empty
+    if(workingDaysPerWeek.length === 0) {
+      continue
+    }
+    // week not empty start here
+    weeklyWorkingDays.push(workingDaysPerWeek);
+
+    const weeklyHours = weeklyWorkingDays[key].length * dailyWorkingHours;
+    totalMonthlyHours = totalMonthlyHours + weeklyHours;
+    const weekIndex = +key + 1;
+    const weeklyWages = weeklyHours * wagesPerHour;
+
+    const workingDaysInWeek =  weeklyWorkingDays[key];
+    
+    const weekendDay = workingDaysInWeek[weeklyWorkingDays[key].length - 1];
+
+    const weekDateString = `${weekendDay}/${kalendar.monthAbbr}/${kalendar.year}`;
+
+    weeklyHoursTotal["week" + weekIndex] = {
+      weeklyHours,
+      weeklyWages,
+      wagesPerHour: wagesPerHour,
+      weekendDate: weekDateString,
+    };
   }
 
-    const monthDays = kalendar.calendar;
-    const weeklyHoursTotal: IWeeklyHoursTotal = {};
+  const monthlyWages = wagesPerHour * totalMonthlyHours;
 
-    let weeklyWorkingDays: number[][] = [];
-    let totalMonthlyHours = 0;
+  console.log("monthly invoice detail estimated");
 
-    for (const key in monthDays) {
-      const filteredPerWeek = monthDays[key].slice(1, -1); // filter sunday && saturrday
-
-      const workingDaysPerWeek = filteredPerWeek.filter((day) => {
-
-        if(holidays && holidays.length > 0 || day !== 0) {
-            if(day !== 0 && !holidays?.includes(day)) {
-                return day
-            }
-        }
-
-      });
-
-      weeklyWorkingDays.push(workingDaysPerWeek);
-
-      const weeklyHours = weeklyWorkingDays[key].length * dailyWorkingHours;
-      totalMonthlyHours = totalMonthlyHours + weeklyHours;
-      const weekIndex = +key + 1;
-      const weeklyWages = weeklyHours * wagesPerHour
-
-      const weekendDay = weeklyWorkingDays[key][weeklyWorkingDays[key].length - 1]
-
-      const weekDateString = `${weekendDay}/${kalendar.monthAbbr}/${kalendar.year}`
-
-      weeklyHoursTotal['week'+ weekIndex] = {weeklyHours, weeklyWages, wagesPerHour: wagesPerHour, weekendDate: weekDateString};
-    }
-
-    const monthlyWages = wagesPerHour * totalMonthlyHours;
-    console.log("monthly invoice detail estimated")
-
-    return {...kalendar, weeklyWorkingDays, weeklyHoursTotal, totalMonthlyHours, dailyWages, monthlyWages}
-
+  return {
+    ...kalendar,
+    weeklyWorkingDays,
+    weeklyHoursTotal,
+    totalMonthlyHours,
+    dailyWages,
+    monthlyWages,
+  };
 };
 
 const toWordsCustom = (currencyName: string) => {
   const toWords = new ToWords({
-    localeCode: 'en-IN',
+    localeCode: "en-IN",
     converterOptions: {
       currency: true,
       ignoreDecimal: false,
       ignoreZeroCurrency: false,
       doNotAddOnly: false,
-      currencyOptions: { // can be used to override defaults for the selected locale
-        name: 'Zloty',
-        plural: 'Zloty',
-        symbol: 'pln',
+      currencyOptions: {
+        // can be used to override defaults for the selected locale
+        name: "Zloty",
+        plural: "Zloty",
+        symbol: "pln",
         fractionalUnit: {
-          name: 'Grozy',
-          plural: 'Grozy',
-          symbol: 'pln',
+          name: "Grozy",
+          plural: "Grozy",
+          symbol: "pln",
         },
-      }
-    }
+      },
+    },
   });
 
-  return toWords
-}
+  return toWords;
+};
 
 const currencyFormat = (amount: number) => {
-  return currency(amount, { precision: 0, symbol: '' }).format()
+  return currency(amount, { precision: 0, symbol: "" }).format();
+};
 
-}
-
-export {
-    monthlyInvoiceDetails,
-    toWordsCustom,
-    currencyFormat
-}
+export { monthlyInvoiceDetails, toWordsCustom, currencyFormat };

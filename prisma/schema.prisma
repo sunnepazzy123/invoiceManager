@@ -42,8 +42,9 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  // Post          Post[]
-  // Comment       Comment[]
+  companies     Company[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())
 }
 
 model VerificationToken {
@@ -54,43 +55,40 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// model Topic {
-//   id          String @id @default(cuid())
-//   slug        String @unique
-//   description String
-//   posts       Post[]
+model Company {
+  id String @id @default(cuid())
+  name String @unique
+  email String @unique
+  nip Int @unique
+  userId String // Reference to the Company model
+  user User @relation(fields: [userId], references: [id])
+  contracts Contract[] // One-to-many relationship
+  bankDetails BankDetail[] // One-to-many relationship
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-// }
+model Contract {
+  id String @id @default(cuid())
+  type String
+  clientNIP Int
+  wagesPerHour Int
+  dailyHours Int
+  duration String
+  signature String
+  companyId String // Reference to the Company model
+  company Company @relation(fields: [companyId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
-// model Post {
-//   id      String @id @default(cuid())
-//   title   String
-//   content String
-//   userId  String
-//   topicId String
-
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-//   topic    Topic     @relation(fields: [topicId], references: [id])
-//   comments Comment[]
-// }
-
-// model Comment {
-//   id       String  @id @default(cuid())
-//   content  String
-//   postId   String
-//   userId   String
-//   parentId String?
-
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   parent   Comment?  @relation("Comments", fields: [parentId], references: [id], onDelete: Cascade)
-//   post     Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-//   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-//   children Comment[] @relation("Comments")
-// }
+model BankDetail {
+  id String @id @default(cuid())
+  name String
+  accountName String
+  accountNumber Int
+  companyId String // Reference to the Company model
+  company Company @relation(fields: [companyId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

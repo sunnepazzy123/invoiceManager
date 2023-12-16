@@ -5,7 +5,7 @@ import React from "react";
 const Page = () => {
   return (
     <div className="flex items-center justify-center">
-      <div className="mt-3">
+      <div className="my-3 min-w-[1000px]">
       <CardDaisy>
         <h2>List of Contracts</h2>
         <DataTable />

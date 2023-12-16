@@ -7,7 +7,7 @@ import TextAreaDaisy from './TextAreaDaisy'
 import { createContract } from '@/actions/contract'
 import Button from './Button'
 
-const ContractRegisterForm = () => {
+const CompanyRegisterForm = () => {
   return (
     <div className="flex flex-col items-center p-2.5">
       <form action={createContract}>
@@ -76,4 +76,4 @@ const ContractRegisterForm = () => {
   )
 }
 
-export default ContractRegisterForm
+export default CompanyRegisterForm

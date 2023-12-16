@@ -52,7 +52,7 @@ const InvoiceReciept = () => {
           <p className="font-bold">Bill To: </p>
           <p className="font-bold">Collabera Poland sp</p>
           <p>ul Postepu 15, 02-278, Warszawa, Polska</p>
-          <p>NIP: 48734949</p>
+          <p>NIP: 5252678170</p>
         </div>
 
         <div className="">

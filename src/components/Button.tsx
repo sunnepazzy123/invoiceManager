@@ -1,9 +1,17 @@
-import React from 'react'
+import React from "react";
 
-const Button = () => {
-  return (
-    <div>Button</div>
-  )
+interface ButtonType {
+  name: string;
 }
 
-export default Button
+const Button: React.FC<ButtonType> = ({ name }) => {
+  return (
+    <div>
+      <button className="btn btn-wide" type="submit">
+        {name}
+      </button>
+    </div>
+  );
+};
+
+export default Button;

@@ -76,6 +76,7 @@ export default function SpanningTable({result}: InvoiceCalenderType) {
         </TableHead>
         <TableBody>
           {Object.entries(result.weeklyHoursTotal).map(([key, value]) => (
+            
             <TableRow key={uuidv4()}>
               <TableCell className="table-cell text-center">{value.weekendDate}</TableCell>
               <TableCell className="table-cell text-center" align="right">
@@ -88,7 +89,9 @@ export default function SpanningTable({result}: InvoiceCalenderType) {
                 {currencyFormat(value.weeklyWages)}
               </TableCell>
             </TableRow>
-          ))}
+          )
+          
+          )}
 
             <TableRow>
               <TableCell className="table-cell"></TableCell>
@@ -128,10 +131,13 @@ export default function SpanningTable({result}: InvoiceCalenderType) {
 
           <TableRow className="table-row">
             <TableCell className="table-cell-bottom table-cell-x" colSpan={1}>Signature</TableCell>
-            <TableCell className="table-cell-bottom table-cell" align="right" colSpan={3}>
+            <TableCell className="table-cell-bottom table-cell" colSpan={3} align="right">
+              <span className="flex justify-end">
               <Image src="/signature.jpg" alt="sig" height={80} width={80} />
-            </TableCell>
 
+              </span>
+              
+            </TableCell>
 
           </TableRow>
 

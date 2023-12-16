@@ -1,14 +1,10 @@
 import * as React from "react";
-import Button from "@mui/material/Button";
 import { styled } from "@mui/material/styles";
 import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import Typography from "@mui/material/Typography";
-import { FC, ReactNode } from "react";
+import { ReactNode } from "react";
 
 interface ModalMatType {
   setOpen: () => void;
@@ -34,8 +30,8 @@ export default function ModalMat({ open, setOpen, children, title }: ModalMatTyp
   return (
     <React.Fragment>
       <Dialog aria-labelledby="customized-dialog-title" open={open}>
-        <div className="flex text-center p-2.5 justify-center">
-            <h2>{title}</h2>
+        <div className="flex text-center p-2.5 justify-center py-3">
+            <Typography component={'h2'} fontWeight={700} textTransform={'capitalize'}>{title}</Typography>
           <IconButton
             aria-label="close"
             onClick={handleClose}
