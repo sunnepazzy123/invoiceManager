@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgres"
+  url      = env("DATABASE_POSTGRES")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String     @id @default(cuid())
+  name          String?
+  email         String?    @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  companies     Company[]
+  contracts     Contract[]
+  banks         BankAccount[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @default(now())
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Company {
+  id              String        @id @default(cuid())
+  name            String
+  email           String
+  phone           String?
+  address         String
+  nip             String        @unique
+  isEnabled       Boolean       @default(true)
+  ownership       Boolean       @default(false)
+  userId          String // Reference to the User model
+  user            User          @relation(fields: [userId], references: [id])
+  contracts       Contract[]    @relation("CompanyContracts") // One-to-many relationship as employer
+  clientContracts Contract[]    @relation("ClientCompanyContracts") // One-to-many relationship as client
+  bankAccount     BankAccount[] // One-to-many relationship
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Contract {
+  id           String  @id @default(cuid())
+  type         String
+  wagesPerHour Int
+  dailyHours   Int
+  duration     Int
+  signature    String
+  isEnabled    Boolean @default(true)
+  refNumber    String  @unique
+  userId       String // Reference to the User model
+  user         User    @relation(fields: [userId], references: [id])
+
+  companyNip String // Reference to the employer company
+  company    Company @relation(fields: [companyNip], references: [nip], name: "CompanyContracts")
+
+  clientCompanyNip String // Reference to the client company
+  clientCompany    Company @relation(fields: [clientCompanyNip], references: [nip], name: "ClientCompanyContracts")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 
+model BankAccount {
+  id            String   @id @default(cuid())
+  name          String
+  accountName   String
+  accountNumber Int
+  companyId     String // Reference to the Company model
+  company       Company  @relation(fields: [companyId], references: [id])
+  userId        String // Reference to the User model
+  user          User  @relation(fields: [userId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
